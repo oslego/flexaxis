@@ -1,0 +1,195 @@
+<!DOCTYPE HTML>
+<html lang="ru-RU">
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <style type="text/css">
+  
+    .flex-container{
+      display: -webkit-flex;
+      background: lightgray;
+      height: 200px;
+      width: 400px;
+    }
+    
+    .flex-container div{
+      width: 100px;
+      height: 50px;
+      background: gray;
+      line-height: 50px;
+      text-align: center;
+    }
+    
+    .row{
+      -webkit-flex-direction: row;
+    }
+
+    .row-reverse{
+      -webkit-flex-direction: row-reverse;
+    }
+    
+    .column{
+      -webkit-flex-direction: column;
+    }
+
+    .column-reverse{
+      -webkit-flex-direction: column-reverse;
+    }
+    
+  </style>
+</head>
+<body>
+  <h1>Flex box direction visualizer</h1>
+  <p>This helps you with CSS Flexbox</p>
+  <p>This page runs a script that shows you the main-axis <span style="background:green">(green)</span> and cross-axis <span style="background:red">(red)</span> according to the flex direction declared on the flex container.</p>
+  
+  <p>TODO: Make it a bookmarklet</p>
+  
+  <h2>flex-direction: row</h2>
+  <div class="flex-container row">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+  </div>
+
+  <h2>flex-direction: row-reverse</h2>
+  <div class="flex-container row-reverse">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+  </div>
+
+  <h2>flex-direction: column</h2>
+  <div class="flex-container column">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+  </div>
+
+  <h2>flex-direction: column-reverse</h2>
+  <div class="flex-container column-reverse">
+    <div>Item 1</div>
+    <div>Item 2</div>
+    <div>Item 3</div>
+  </div>
+  
+  <!-- TODO: generate SVG from template. Remove from DOM -->
+  <svg id="overlay" width="500" height="500" xmlns="http://www.w3.org/2000/svg" style="visibility: hidden" viewBox="0 0 400 200">
+      <defs>
+        <style type="text/css"><![CDATA[
+           #main-axis {
+             stroke: green;
+           }
+           #cross-axis {
+             stroke: red;
+           }
+        ]]></style>
+      </defs>
+      <marker id="triangle"
+        viewBox="0 0 10 10" refX="0" refY="5" 
+        markerUnits="strokeWidth"
+        markerWidth="4" markerHeight="3"
+        orient="auto">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+      </marker>
+    <polyline id="main-axis" points="0 0 100 0" marker-end="url(#triangle)" stroke-width="10"/>
+    <polyline id="cross-axis"points="0 0 100 0" marker-end="url(#triangle)" stroke-width="10"/>
+  </svg>
+  
+  <script type="text/javascript">
+  
+  function arrayify(list){
+    return Array.prototype.slice.call(list)
+  }
+  
+  // return the supported property name: with prefix or non-prefixed
+  function getSupportedCSSPropertyName(property){
+    // TODO: implement as singleton
+  }
+  
+  function getFlexContainerRules(){
+    var rules = []
+    arrayify(document.styleSheets).forEach(function(sheet){
+       if (sheet.cssRules.length){
+         arrayify(sheet.cssRules).forEach(function(cssRule){
+           if (cssRule.style.webkitFlexDirection){
+             rules.push(cssRule)
+           }
+         })
+       }
+    })
+    
+    return rules
+  }
+  
+  function drawOvelay(config, direction){
+    var svg = document.querySelector('#overlay').cloneNode(true)
+    svg.removeAttribute('id')
+    svg.removeAttribute('style')
+    svg.setAttribute('width', config.width)
+    svg.setAttribute('height', config.height)
+    svg.style.position = 'absolute'
+    svg.style.top = config.top
+    svg.style.left = config.left
+    svg.setAttribute('viewBox', [0, 0, config.width, config.height])
+    
+    var mainAxis = svg.querySelector('#main-axis')
+    var crossAxis = svg.querySelector('#cross-axis')
+    var viewBox
+    
+    switch(direction){
+      case "row":
+        //top-left to right
+        mainAxis.setAttribute('points', [0, 0, config.width / 2, 0])
+        //top-left to bottom
+        crossAxis.setAttribute('points', [0, 0, 0, config.height / 2])
+
+        svg.setAttribute('viewBox', [-15, -15, config.width, config.height])
+      break;
+      
+      case "row-reverse":
+        //top-right to left
+        mainAxis.setAttribute('points', [config.width, 0, config.width / 2, 0])
+        //top-right to bottom
+        crossAxis.setAttribute('points', [config.width, 0, config.width, config.height / 2])
+        
+        svg.setAttribute('viewBox', [15, -15, config.width, config.height])
+      break;
+      
+      case "column":
+        //top-left to bottom
+        mainAxis.setAttribute('points', [0, 0, 0, config.height / 2])
+        //top-left to right
+        crossAxis.setAttribute('points', [0, 0, config.width / 2, 0])
+        
+        svg.setAttribute('viewBox', [-15, -15, config.width, config.height])
+      break
+      
+      case "column-reverse":
+        //bottom-left to top
+        mainAxis.setAttribute('points', [0, config.height, 0, config.height / 2])
+        //bottom-left to right
+        crossAxis.setAttribute('points', [0, config.height, config.width / 2, config.height])
+        
+        svg.setAttribute('viewBox', [-15, 15, config.width, config.height])
+        
+      break
+    }
+    
+    document.body.appendChild(svg)
+  }
+  
+  var flexRules = getFlexContainerRules()
+  flexRules.forEach(function(rule){
+    var els = document.querySelectorAll(rule.selectorText)
+    
+    arrayify(els).forEach(function(el){
+      var rect = el.getBoundingClientRect()
+      drawOvelay(rect, rule.style.webkitFlexDirection)
+    })
+    
+  })
+  
+  </script>
+</body>
+</html>
