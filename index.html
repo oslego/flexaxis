@@ -188,20 +188,54 @@
         
       break
     }
-    
+
+    // mark it so we can remove it later
+    svg.setAttribute('data-flexaxis-overlay', '')
     document.body.appendChild(svg)
   }
   
-  var flexRules = getFlexContainerRules()
-  flexRules.forEach(function(rule){
-    var els = document.querySelectorAll(rule.selectorText)
-    
-    arrayify(els).forEach(function(el){
-      var rect = el.getBoundingClientRect()
-      drawOvelay(rect, rule.style.webkitFlexDirection)
+  
+  function teardown(){
+    var overlays = document.querySelectorAll('svg[data-flexaxis-overlay]')
+    arrayify(overlays).forEach(function(svg){
+      svg.parentNode.removeChild(svg)
     })
-    
-  })
+    // memory cleanup
+    overlays.length = 0
+  }
+  
+  function setup(){
+    var flexRules = getFlexContainerRules()
+    flexRules.forEach(function(rule){
+      var els = document.querySelectorAll(rule.selectorText)
+
+      arrayify(els).forEach(function(el){
+        var rect = el.getBoundingClientRect()
+        drawOvelay(rect, rule.style.webkitFlexDirection)
+      })
+    })
+  }
+
+  function throttle(fn, delay){
+      var timer = null, delay = delay || 150
+      return function(){
+        if (!timer){
+          timer = setTimeout(function(){
+            fn.call()
+            timer = null
+          }, delay)
+        }
+      }
+  }
+  
+  var redraw = throttle(function(){
+    // TODO: reduce waste. Reuse SVG and recompute from flex-container boundingRect
+    teardown()
+    setup()
+  }, 100)
+
+  document.addEventListener('DOMContentLoaded', setup)
+  window.addEventListener('resize', redraw)
   
   </script>
 </body>
