@@ -8,16 +8,7 @@
     .flex-container{
       display: -webkit-flex;
       background: lightgray;
-      height: 200px;
-      width: 400px;
-    }
-    
-    .flex-container div{
-      width: 100px;
-      height: 50px;
-      background: gray;
-      line-height: 50px;
-      text-align: center;
+      padding: 30px;
     }
     
     .row{
@@ -29,11 +20,33 @@
     }
     
     .column{
+      
       -webkit-flex-direction: column;
     }
 
     .column-reverse{
       -webkit-flex-direction: column-reverse;
+    }
+    
+    .flex-container div{
+      width: 100px;
+      height: 50px;
+      background: gray;
+      line-height: 50px;
+      margin: 5px;
+      text-align: center;
+    }
+    
+    .flex-container div:nth-of-type(n){
+      background: #eee;
+    }
+    
+    .flex-container div:nth-of-type(2n){
+      background: #999;
+    }
+    
+    .flex-container div:nth-of-type(3n){
+      background: #666;
     }
     
   </style>
